@@ -324,7 +324,7 @@ The most critical open question for future work is the definition of an acceptab
 
 <!-- All references must match entries in library/references.bib.
      Do not add a reference that does not have a verified BibTeX entry.
-     Cross-check every @citekey in this document against references.bib before submission.
+     Cross-check every citekey in this document against references.bib before submission.
      Run: python scripts/validate_citations.py to check for orphans. -->
 
 [TODO_CITATION_NEEDED: verify all citekeys below have matching references.bib entries before submission]

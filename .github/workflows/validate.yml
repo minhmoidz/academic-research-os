@@ -38,7 +38,7 @@ jobs:
 
       - name: Run citation validator
         run: |
-          python scripts/validate_citations.py --root .
+          python scripts/validate_citations.py
         # Exits with code 1 if any orphan citations are found.
         # Script handles missing files gracefully with warnings.
 
@@ -68,7 +68,7 @@ jobs:
 
       - name: Run evidence matrix validator
         run: |
-          python scripts/validate_evidence_matrix.py --root .
+          python scripts/validate_evidence_matrix.py
         # Exits with code 1 if any check fails (missing columns, invalid values,
         # duplicate claim IDs, claim IDs not in registry, or unsourced draft sentences).
 
@@ -98,18 +98,13 @@ jobs:
 
       - name: Run hallucination phrase checker
         run: |
-          python scripts/check_claims_without_sources.py \
-            --root . \
-            --dirs outputs synthesis
-        # Exits with code 1 if any HIGH RISK phrases found (phrases like
-        # "studies show", "it is well known", etc. without nearby claim IDs).
+          python scripts/check_claims_without_sources.py
+        # Scans outputs/ and synthesis/ by default.
+        # Exits with code 1 if any HIGH RISK phrases found without nearby claim IDs.
 
       - name: Run hallucination checker in strict mode (advisory)
         run: |
-          python scripts/check_claims_without_sources.py \
-            --root . \
-            --dirs outputs synthesis \
-            --strict || true
+          python scripts/check_claims_without_sources.py --strict || true
         # Strict mode also flags medium-risk hedged language without claim IDs.
         # Advisory only (|| true) — does not fail the job.
 

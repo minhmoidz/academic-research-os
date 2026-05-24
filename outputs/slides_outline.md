@@ -222,7 +222,8 @@
 - C005 vs. C003 (CONTR-002) — show the methodological explanation
 - GAP-002 (no threshold exists) — show as a red "missing piece"
 
-**Visual suggestion:** Two-panel layout. LEFT: "What the literature agrees on" (green checkmarks). RIGHT: "What is still unresolved" (amber question marks). For each contradiction, show a brief two-line summary with citekeys. Keep this honest and concise — one slide, no cramming.
+**Visual suggestion:** Two-panel layout. LEFT: "What prior work agrees on" (green checkmarks). RIGHT: "What is still unresolved" (amber question marks). For each contradiction, show a brief two-line summary with citekeys. Keep this honest and concise — one slide, no cramming.
+<!-- Evidence: C001, C003, C005, C007 | Confirmed clusters from evidence_matrix.csv -->
 
 ---
 

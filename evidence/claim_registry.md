@@ -158,3 +158,99 @@
 **Status:** active
 
 **Notes:** 94% accuracy is high but the binary task is simpler than fine-grained methodology classification. If the draft needs finer-grained claims (e.g., RCT vs. observational study), this figure does not apply. Do not over-generalize.
+
+---
+
+## C007
+
+**Full claim:** "LLM assistance in literature review does not significantly reduce missed relevant papers compared to manual keyword search."
+
+**Source:** @huang2024recall, Sec 3.3, p.9
+
+**Evidence type:** experiment
+
+**Confidence:** medium
+
+**Study context:** 6 systematic reviews compared; LLM-assisted recall 0.87 vs. Boolean-only 0.85 (p=0.31, not significant). Different metric from C001 (time efficiency) — both claims can coexist.
+
+**Supporting claims:** none
+
+**Contradicted by:** C001 (C001 shows efficiency gains; C007 shows no recall gains — these address different metrics and are not genuinely contradictory)
+
+**Used in:** `draft.md` § discussion
+
+**Status:** active
+
+**Notes:** Critical boundary condition: LLM assistance improves speed but not coverage. Protocol design must retain systematic Boolean search. Do not cite C007 as evidence that LLM assistance is ineffective overall.
+
+---
+
+## C008
+
+**Full claim:** "Chain-of-thought prompting improves LLM accuracy on evidence quality assessment tasks from 61% to 79%."
+
+**Source:** @sun2024cot, Table 2, p.7
+
+**Evidence type:** experiment
+
+**Confidence:** medium
+
+**Study context:** Measured on a custom evidence quality rubric (GRADE-inspired). Rubric was not independently validated. Inter-annotator agreement among human raters: kappa=0.71. Improvement is real but rubric validity is uncertain.
+
+**Supporting claims:** C004 (both show that structured prompting strategies reduce LLM error rates)
+
+**Contradicted by:** none directly; validity of the rubric is the main caveat
+
+**Used in:** `draft.md` § method (pending)
+
+**Status:** active
+
+**Notes:** Medium confidence because the rubric itself is unvalidated. Do not claim 79% as an absolute accuracy figure — always qualify with "on the GRADE-inspired rubric used in the study."
+
+---
+
+## C009
+
+**Full claim:** "LLMs trained on scientific corpora perform no better than general LLMs on domain-specific claim verification tasks."
+
+**Source:** @nguyen2024domainadapt, Sec 4, p.11
+
+**Evidence type:** experiment
+
+**Confidence:** low
+
+**Study context:** Only 2 domain-adapted models tested (BioMedLM, SciDeBERTa) vs. GPT-4. Small evaluation set (n=200 claims per domain). Results: biomedical 0.79 vs 0.81, CS 0.83 vs 0.82 — differences are small and may not be significant.
+
+**Supporting claims:** C006 (general GPT-4 strong performance on methodology classification is consistent with C009's finding)
+
+**Contradicted by:** common assumption that domain pretraining helps; C009 challenges this but with very low statistical power
+
+**Used in:** `draft.md` § none (background, low confidence — use cautiously)
+
+**Status:** active
+
+**Notes:** LOW CONFIDENCE. n=200 is insufficient to draw strong conclusions. Treat as a preliminary finding. Do not present this as established fact. Phrase as: "Preliminary evidence suggests that domain adaptation may not provide consistent benefits (nguyen2024domainadapt), though larger-scale evaluations are needed."
+
+---
+
+## C010
+
+**Full claim:** "A structured evidence matrix protocol combined with LLM-assisted screening reduces duplicate claim registration by 73% versus unstructured note-taking."
+
+**Source:** @ross2024protocol, Sec 6, p.16
+
+**Evidence type:** case-study
+
+**Confidence:** medium
+
+**Study context:** Single-group pilot study at one institution (n=8 research teams). No control condition — comparison is self-reported retrospective vs. structured condition. Methodology directly relevant to the design of this Research OS.
+
+**Supporting claims:** C001 (both support the value of structured LLM-assisted workflows)
+
+**Contradicted by:** none directly; main weakness is lack of control condition
+
+**Used in:** `draft.md` § method
+
+**Status:** active
+
+**Notes:** The 73% figure is compelling but comes from a single-group study with no randomization. Cite with appropriate hedging: "In a pilot evaluation, ross2024protocol found..." Do not present as a robust empirical result without the caveat about study design.
