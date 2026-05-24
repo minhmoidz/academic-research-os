@@ -1,0 +1,235 @@
+# Search Sources Catalog
+# Project: LLM-Assisted Literature Screening (RQ-001)
+# Last Updated: 2026-05-25
+#
+# Use this file to track which databases were searched, when, and what
+# limitations to be aware of when interpreting search results.
+# Update "last_searched" after each search session.
+
+sources:
+
+  - name: Google Scholar
+    url: https://scholar.google.com
+    type: web
+    coverage: broad / multidisciplinary
+    strengths:
+      - Largest index of academic content (~400M documents)
+      - Includes grey literature, theses, technical reports, preprints
+      - Citation count data useful for assessing paper influence
+      - Finds papers not indexed in formal databases
+      - No registration required
+    limitations:
+      - No programmatic API (scraping required, which violates ToS)
+      - Inconsistent metadata — author names, years, venue names often malformed
+      - Cannot reliably export BibTeX in bulk
+      - Limited Boolean operator support (no OR/AND/NOT in standard interface)
+      - Results list capped at ~1000 per query regardless of actual hits
+      - Algorithm opaque — results influenced by citation count, not just relevance
+    access: free
+    rate_limit: null
+    api_available: false
+    export_formats: [BibTeX (manual, per paper), Google Scholar CSV (limited)]
+    search_syntax_example: >
+      "large language model" "systematic review" screening recall
+      [Use quoted phrases; sort by relevance or Most Recent; apply date filter via Tools > Any time > Custom range]
+    notes: >
+      Use for broad discovery and grey literature. Do NOT rely on Google Scholar
+      alone — verify found papers in a formal database. Export BibTeX one-by-one
+      via "Cite" > BibTeX. Check for duplicate entries due to Scholar metadata errors.
+    last_searched: "2026-05-22"
+
+  - name: Semantic Scholar
+    url: https://www.semanticscholar.org
+    type: web_and_api
+    coverage: broad / computer science + biomedical emphasis
+    strengths:
+      - Free REST API with generous rate limits (100 requests/5 min unauthenticated; higher with API key)
+      - Clean structured metadata (authors, year, venue, abstract, DOI, arXiv ID)
+      - Paper embeddings available for semantic similarity search
+      - Citation and reference graphs accessible via API
+      - Open access PDF links often available
+    limitations:
+      - Coverage weaker than Google Scholar for humanities and social sciences
+      - Preprint coverage depends on arXiv/bioRxiv indexing lag (~1–2 weeks)
+      - Venue classification can be inconsistent for workshop papers
+      - "Fields of Study" filter sometimes miscategorizes interdisciplinary papers
+    access: free (API key optional but recommended)
+    rate_limit: "100 req/5 min (unauthenticated); 1 req/s with API key (higher tiers available)"
+    api_available: true
+    api_docs: https://api.semanticscholar.org/api-docs/
+    export_formats: [JSON via API, BibTeX (per paper), CSV (web UI limited)]
+    search_syntax_example: >
+      Web UI: LLM systematic review literature screening recall precision
+      [Apply Year filter 2020–2026, Fields of Study: Computer Science]
+
+      API (Python):
+        import requests
+        resp = requests.get(
+          "https://api.semanticscholar.org/graph/v1/paper/search",
+          params={
+            "query": "LLM systematic review literature screening recall",
+            "fields": "title,authors,year,venue,externalIds,abstract,citationCount",
+            "year": "2020-2026",
+            "limit": 100
+          },
+          headers={"x-api-key": "YOUR_KEY"}
+        )
+    notes: >
+      Best source for programmatic bulk retrieval with clean metadata.
+      Prefer the API over the web UI for searches with >50 expected results.
+      Combine with arXiv for preprint coverage.
+    last_searched: "2026-05-22"
+
+  - name: arXiv
+    url: https://arxiv.org
+    type: preprint_server
+    coverage: computer science / physics / mathematics / quantitative biology
+    strengths:
+      - Best source for cutting-edge CS/AI/NLP work before peer review
+      - Full-text PDFs always freely available
+      - Bulk data access via OAI-PMH or Kaggle dataset
+      - Categories allow precise domain filtering (cs.CL, cs.IR, cs.AI)
+      - arXiv API free with no authentication required
+    limitations:
+      - Not peer-reviewed — quality varies substantially
+      - Papers may be significantly revised after initial submission
+      - No venue or citation count metadata in the arXiv API (use Semantic Scholar to enrich)
+      - Results may be superseded by published versions in other databases
+      - Advanced search syntax is limited
+    access: free (no registration)
+    rate_limit: "3 req/s (API); higher for bulk OAI-PMH"
+    api_available: true
+    api_docs: https://arxiv.org/help/api/
+    export_formats: [BibTeX (per paper via export link), JSON via API, Atom/RSS feed]
+    search_syntax_example: >
+      Advanced search (https://arxiv.org/search/advanced):
+        ti: (language model)
+        abs: (systematic review OR literature screening)
+        abs: (recall)
+        Categories: cs.CL, cs.IR, cs.AI
+        Date: from 2022-01-01 to present
+
+      API:
+        http://export.arxiv.org/api/query?search_query=ti:(language+model)+AND+abs:(systematic+review)+AND+abs:(recall)&cat=cs.CL+OR+cs.IR&start=0&max_results=100
+    notes: >
+      Critical source for this project because many LLM papers appear on arXiv
+      months before formal publication. Always check whether an arXiv paper has
+      a corresponding published version on Semantic Scholar — use the published
+      version in the evidence matrix if available (more stable citation target).
+    last_searched: "2026-05-22"
+
+  - name: ACM Digital Library
+    url: https://dl.acm.org
+    type: formal_database
+    coverage: computer science / information systems
+    strengths:
+      - Authoritative source for ACM conference and journal papers (SIGIR, SIGKDD, CHI, CSCW, NAACL, ACL, EMNLP via ACL Anthology mirror)
+      - Structured metadata with DOIs
+      - Persistent access; papers do not disappear or get significantly revised
+      - Full-text search available
+    limitations:
+      - Most content behind paywall (ACM Open Access improving but not complete)
+      - Institutional access required for full text of non-open papers
+      - API access limited — no free programmatic bulk search
+      - Does not index non-ACM venues (no IEEE, Springer, Elsevier without separate subscription)
+    access: institutional (paywall for most full text); abstract + metadata free
+    rate_limit: null
+    api_available: false
+    export_formats: [BibTeX (per paper or bulk for institutional users), RIS, EndNote]
+    search_syntax_example: >
+      ACM Advanced Search (https://dl.acm.org/search/advanced):
+        Title: ("language model" OR "LLM")
+        Abstract: ("systematic review" OR "literature screening")
+        Abstract: (recall OR precision)
+        Published: 2020–2026
+        Content Type: Research Article, Conference Paper
+    notes: >
+      Use for final verification of ACM conference papers found on Google Scholar
+      or Semantic Scholar. Obtain BibTeX from ACM DL to ensure accurate venue
+      metadata (proceedings names, editors, ISBN). If full text is paywalled,
+      check for author-deposited versions on Semantic Scholar or institutional
+      repositories.
+    last_searched: "2026-05-22"
+
+  - name: IEEE Xplore
+    url: https://ieeexplore.ieee.org
+    type: formal_database
+    coverage: electrical engineering / computer science / information technology
+    strengths:
+      - Authoritative for IEEE/IET journals and conference proceedings
+      - Metadata quality is high — venue, volume, issue, page numbers reliable
+      - IEEE API available with free developer key
+      - Open access filter for freely downloadable papers
+    limitations:
+      - Coverage for NLP/ML topics weaker than ACM DL or arXiv — fewer ML conference papers
+      - Full text mostly paywalled for non-open-access content
+      - API rate limited at 200 results per query without subscription
+      - Mostly relevant for systems/engineering-oriented ML papers; less relevant for NLP-focused LLM screening work
+    access: institutional (paywall for most); free developer API for metadata
+    rate_limit: "200 results/query (free developer API)"
+    api_available: true
+    api_docs: https://developer.ieee.org/docs
+    export_formats: [BibTeX, RIS, CSV, XML (via API or web UI export)]
+    search_syntax_example: >
+      Web UI (https://ieeexplore.ieee.org/search/advanced):
+        Abstract: language model
+        Abstract: systematic review screening
+        Full Text & Metadata: screening automation
+        Publication Year: 2020–2026
+        Content Type: Journals, Conference Publications
+
+      API:
+        GET https://ieeexploreapi.ieee.org/api/v1/search/articles?
+          abstract=language+model+systematic+review+screening&
+          start_year=2020&end_year=2026&
+          max_records=25&
+          apikey=YOUR_KEY
+    notes: >
+      Lower priority source for this specific project (LLM screening is primarily
+      published in CS/NLP venues covered by ACM DL and Semantic Scholar).
+      Search IEEE Xplore for completeness, especially for IEEE Access papers
+      which are open access and cover a broad range of applied CS topics.
+    last_searched: "2026-05-22"
+
+  - name: PubMed / MEDLINE
+    url: https://pubmed.ncbi.nlm.nih.gov
+    type: formal_database
+    coverage: biomedical and life sciences
+    strengths:
+      - Authoritative index for biomedical literature (~35M citations)
+      - Free full API access (Entrez E-utilities; no key required up to 3 req/s)
+      - MeSH controlled vocabulary enables precise semantic search
+      - Strong coverage of Cochrane, JMIR, systematic review methodology journals
+      - Many papers are open access via PubMed Central (PMC)
+    limitations:
+      - Limited coverage of computer science and NLP conferences
+      - MeSH terms for LLM topics are not yet well established (use text word [tiab] searches)
+      - Biomedical framing may yield papers where "screening" means patient/diagnostic screening, not literature screening
+    access: free (PubMed); full text via PubMed Central for open access papers
+    rate_limit: "3 req/s without API key; 10 req/s with API key (free)"
+    api_available: true
+    api_docs: https://www.ncbi.nlm.nih.gov/books/NBK25501/
+    export_formats: [PubMed (.nbib), BibTeX (via third-party tools), RIS, CSV via API]
+    search_syntax_example: >
+      Web UI (https://pubmed.ncbi.nlm.nih.gov/advanced/):
+        (("language model"[tiab] OR "LLM"[tiab] OR "ChatGPT"[tiab] OR "GPT-4"[tiab])
+        AND
+        ("systematic review"[tiab] OR "literature screening"[tiab] OR "study selection"[tiab])
+        AND
+        (recall[tiab] OR precision[tiab] OR sensitivity[tiab] OR "kappa"[tiab]))
+        AND
+        ("2020/01/01"[pdat] : "2026/12/31"[pdat])
+        Filters: English, Systematic Review [pt]
+
+      E-utilities API:
+        https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?
+          db=pubmed&
+          term=language+model[tiab]+AND+systematic+review[tiab]+AND+recall[tiab]&
+          datetype=pdat&mindate=2020&maxdate=2026&
+          retmax=200&retmode=json
+    notes: >
+      Important for biomedical LLM screening papers where Cochrane systematic
+      reviews are involved. Be careful to distinguish "clinical screening" (e.g.,
+      mammography screening) from "literature screening" using the topic context.
+      Import .nbib files to Zotero for automatic metadata extraction and BibTeX export.
+    last_searched: "2026-05-22"

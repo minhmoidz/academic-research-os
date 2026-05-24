@@ -1,142 +1,59 @@
-# Academic Research OS for Claude Code
+# Academic Research OS
 
-A reusable Claude Code Research Operating System for evidence-first academic research, experiment tracking, prior-art checking, venue targeting, paper writing, LaTeX formatting, and multi-agent review.
+An evidence-first research operating system for Claude Code — covering both **literature review workflows** and **AI/ML experiment automation**, from raw idea to camera-ready paper.
 
----
-
-## What This Solves
-
-- Prevents hallucinated citations — no `\cite{}` without a verified BibTeX entry
-- Prevents unsupported claims — every quantitative statement traces to a logged experiment
-- Prevents premature paper writing — prose is blocked until Stage 17 Evidence Freeze passes
-- Forces prior-art and SOTA checks before any novelty claim is written
-- Defines minimum result requirements before confirmatory experiments run
-- Separates exploratory experiments (hypothesis generation) from confirmatory experiments (paper claims)
-- Maps every result to evidence IDs before the draft is written
-- Gates paper drafting behind a structured evidence freeze with 4 hard checkpoints
+> **Core rule:** No claim enters the final draft unless it has a row in `evidence/evidence_matrix.csv` with a traceable source, citation location, and confidence level.
 
 ---
 
-## The 4 Hard Gates
+## What This Is
 
-**Gate 1 — Prior-Art / SOTA Check (Stage 6)**
-No novelty claim may be written until a systematic prior-art check passes. Produces `prior_art_competition_table.md` and `novelty_risk_report.md`. Any contribution with threat level Critical triggers a mandatory pivot or abandonment.
+Two integrated systems in one repo:
 
-**Gate 2 — Target Result Contract (Stage 9)**
-Minimum acceptable results, required baselines, required datasets, and pass/fail criteria must be defined and signed off before any confirmatory experiment runs. The bar cannot be lowered after experiments begin.
+| Mode | Use case | Entry point |
+|---|---|---|
+| **A — Literature Review OS** | Systematic literature search, screening, evidence extraction, synthesis, draft | `research_protocol.md` → `research_questions/` |
+| **B — AI/ML Experiment OS** | Hypothesis testing, proxy experiments, paper writing for empirical ML/AI work | `.claude/research-os/` → `/research-start` in Claude Code |
 
-**Gate 3 — Result Adequacy Gate (Stage 16)**
-Six conditions are evaluated: TRC pass, prior-art beat, stability, ablation support, novelty defense, and venue fit. All six must pass. A partial pass is a full fail. Produces `result_adequacy_report.md` with one of seven decisions (A–G).
-
-**Gate 4 — Evidence Freeze (Stage 17)**
-All paper claims must be mapped to evidence IDs in `evidence_ledger.md` before prose writing begins. No sentence with a quantitative claim may be drafted without a complete evidence chain: `results.tsv → evidence_ledger.md → claim-evidence-table.md → paper.tex`.
+Both modes share the same anti-hallucination discipline: every claim traces to a source.
 
 ---
 
-## Core Workflow
-
-```
-Idea
-  → Stage 1:  Idea Intake & Paper Brief
-  → Stage 2:  Problem Formulation & Hypothesis Registration
-  → Stage 3:  Venue Targeting
-  → Stage 4:  Initial Feasibility Check
-  → Stage 5:  Literature Grounding
-  → Stage 6:  Prior-Art / SOTA Check         [GATE 1]
-  → Stage 7:  Gap and Positioning
-  → Stage 8:  Contribution Contract
-  → Stage 9:  Target Result Contract          [GATE 2]
-  → Stage 10: Experiment Design
-  → Stage 11: Baseline / Implementation Readiness
-  → Stage 12: Exploratory Experiment Loop
-  → Stage 13: Result Interpretation / Direction Update
-  → Stage 14: Confirmatory Experiment Planning
-  → Stage 15: Confirmatory Experiment Execution
-  → Stage 16: Result Adequacy Gate            [GATE 3]
-  → Stage 17: Evidence Freeze                 [GATE 4]
-  → Stage 18: Paper Architecture
-  → Stage 19: Section Drafting
-  → Stage 20: Figure and Table Design
-  → Stage 21: LaTeX Formatting
-  → Stage 22: Multi-Agent Review
-  → Stage 23: Revision
-  → Stage 24: Submission Preparation
-  → Stage 25: Archive
-```
-
----
-
-## Quickstart
+## Quick Start
 
 ```bash
-# Clone the template
-git clone https://github.com/minhmoidz/academic-research-os.git
+# 1. Clone into your project
+git clone https://github.com/minhmoidz/academic-research-os.git /tmp/research-os
+cd your-project
+bash /tmp/research-os/scripts/new-project.sh .
 
-# Scaffold a new research project
-mkdir my-new-paper
-academic-research-os/scripts/new-project.sh my-new-paper
+# 2. Define your research question
+cp research_questions/RQ-001-template.md research_questions/RQ-001.md
+# Edit RQ-001.md: set your question, scope, success criteria
 
-# Open Claude Code in your project
-cd my-new-paper
-claude
+# 3. Fill project adapter (for AI/ML experiment mode)
+nano project_profile.md   # train_command, metric, dataset
 
-# Then type:
-/research-status
-/tool-healthcheck
-/research-start
+# 4. Start working
+claude   # Open Claude Code — it reads .claude/CLAUDE.md automatically
 ```
 
 ---
 
-## Install Into New Project
+## Workflow Overview (Literature Review Mode)
 
-```bash
-git clone https://github.com/minhmoidz/academic-research-os.git
-cd my-new-paper
-../academic-research-os/scripts/new-project.sh .
-claude
-# then type: /research-status
-```
-
----
-
-## All 24 Commands
-
-| Command | Purpose | Stage |
-|---------|---------|-------|
-| `/research-status` | Report current stage, artifacts, blockers, next safe action | Any |
-| `/tool-healthcheck` | Verify all Research OS tools are available | Stage 0 |
-| `/verify-research-os` | Verify all 29 workflow files and 21 skill files are intact | Any |
-| `/resume-research-session` | Restore full project context at session start | Any |
-| `/research-start` | Initialize new project: paper brief, hypothesis registry, project state | Stage 1 |
-| `/venue-target` | Select target venue and define evidence requirements | Stage 3 |
-| `/build-contribution-map` | Create contribution contract mapping claims to hypotheses | Stage 8 |
-| `/target-result-contract` | Define binding minimum result requirements before experiments | Stage 9 |
-| `/literature-review` | Build paper-qa index and literature matrix from local PDFs | Stage 5 |
-| `/prior-art-check` | Assess whether prior work already addresses the contribution | Stage 6 |
-| `/sota-check` | Identify best known results on target datasets | Stage 6 |
-| `/plan-experiments` | Design full experiment matrix before running anything | Stage 10 |
-| `/experiment-loop` | Run bounded autoresearch-style experiment loop | Stages 12, 15 |
-| `/experiment-status` | Report current state of all experiments | Any |
-| `/result-backfill` | Backfill evidence ledger from existing result files | Stage 17 |
-| `/result-adequacy` | Stage 16 gate: evaluate results against target result contract | Stage 16 |
-| `/pivot-decision` | Generate structured pivot decision when results fail | Stage 13, 16+ |
-| `/create-paper-outline` | Create paper section skeleton before any prose is written | Stage 18 |
-| `/draft-section [name]` | Draft a specific paper section using verified evidence only | Stage 19 |
-| `/design-figure [desc]` | Create a figure or diagram for the paper | Stage 20 |
-| `/format-paper` | Compile, format, and fix LaTeX layout issues | Stage 21 |
-| `/review-paper` | Run all 12 review passes | Stage 22 |
-| `/apply-revision-plan` | Apply fixes from review report systematically | Stage 23 |
-| `/submission-check` | Complete final submission checklist before submitting | Stage 24 |
-
----
-
-## Prerequisites
-
-- Claude Code (claude.ai/code)
-- paper-qa (`pip install paper-qa`)
-- tectonic LaTeX compiler (`cargo install tectonic` or via package manager)
-- Git
+| Step | What you do | Key file |
+|---|---|---|
+| 1. Define RQ | Write your research question with scope | `research_questions/RQ-NNN.md` |
+| 2. Search | Run queries, log every result | `search/search_log.csv`, `search/query_bank.md` |
+| 3. Screen | Apply inclusion/exclusion, score papers | `screening/screening_table.csv` |
+| 4. Intake | Read paper, fill note template | `notes/paper_notes/citekey.md` |
+| 5. Extract evidence | Pull claims with source + confidence | `evidence/evidence_matrix.csv` |
+| 6. Identify contradictions | Compare conflicting claims | `notes/contradiction_notes/` |
+| 7. Synthesize | Cluster literature, map arguments, find gaps | `synthesis/` |
+| 8. Adversarial review | Challenge your conclusions | `prompts/adversarial_reviewer.md` |
+| 9. Write draft | Only from evidence matrix | `outputs/draft.md` |
+| 10. Validate & submit | CI/CD checks all citations and claims | `.github/workflows/validate.yml` |
 
 ---
 
@@ -144,51 +61,136 @@ claude
 
 ```
 academic-research-os/
-├── CLAUDE.md                        # Root-level project instructions
-├── README.md
-├── LICENSE
-├── CONTRIBUTING.md
-├── CHANGELOG.md
-├── .gitignore
-├── .claude/
-│   ├── CLAUDE.md                    # Project instructions for Claude Code
-│   ├── research-os/                 # 29 workflow files (00–28)
-│   │   ├── 00_OVERVIEW.md
-│   │   ├── 02_RESEARCH_WORKFLOW.md
-│   │   ├── 13_ANTI_HALLUCINATION_RULES.md
-│   │   └── ...
-│   └── skills/                      # 21 skill files
-│       ├── research-start/
-│       ├── experiment-loop/
-│       └── ...
-├── templates/                       # 17 artifact templates
-│   ├── paper_brief.template.md
-│   ├── project_state.template.md
-│   └── ...
-├── examples/
-│   └── toy-research-project/        # Worked example project
-├── scripts/
-│   ├── new-project.sh               # Scaffold a new research project
-│   ├── install.sh                   # Install OS into existing project
-│   └── verify.sh                    # Verify OS integrity
-└── docs/
-    ├── quickstart.md
-    └── installation.md
+│
+├── research_protocol.md          ← Workflow rules + anti-hallucination checklist
+├── project_profile.md            ← AI/ML project adapter (train command, metric)
+│
+├── research_questions/           ← One file per research question
+│   └── RQ-001-template.md
+│
+├── search/                       ← Search strategy and logs
+│   ├── query_bank.md             ← Query terms + source-specific syntax
+│   ├── search_log.csv            ← Every search, logged with result counts
+│   └── sources.yaml              ← Database catalog with coverage + syntax
+│
+├── screening/                    ← Paper selection
+│   ├── inclusion_exclusion.md    ← Criteria + quality scoring rubric (0-10)
+│   ├── screening_table.csv       ← Decision + score per paper
+│   └── prisma_flow.md            ← PRISMA 2020 flow with Mermaid diagram
+│
+├── library/                      ← Bibliography management
+│   ├── references.bib            ← BibTeX (citekey: authorYYYYkeyword)
+│   └── papers_manifest.csv       ← Full metadata + local path + note status
+│
+├── notes/                        ← Structured reading notes
+│   ├── paper_notes/              ← One file per paper (citekey.md)
+│   │   └── paper_note_template.md
+│   ├── concept_notes/            ← Cross-paper concept synthesis
+│   │   └── concept_note_template.md
+│   └── contradiction_notes/      ← Conflict analysis (CONTR-NNN)
+│       └── contradiction_note_template.md
+│
+├── evidence/                     ← Central claim tracking
+│   ├── evidence_matrix.csv       ← claim_id → paper → evidence → confidence
+│   └── claim_registry.md         ← Full claim context with cross-references
+│
+├── synthesis/                    ← Literature synthesis
+│   ├── literature_map.md         ← Papers clustered by theme
+│   ├── argument_map.md           ← Main thesis + supporting/counter claims
+│   └── gaps_and_opportunities.md ← GAP-NNN entries with priority ranking
+│
+├── outputs/                      ← Final deliverables
+│   ├── draft.md                  ← Paper draft (every claim has Evidence comment)
+│   └── slides_outline.md         ← Presentation outline with evidence pointers
+│
+├── prompts/                      ← LLM prompts for research tasks
+│   ├── paper_extractor.md        ← Extract structured evidence from one paper
+│   ├── adversarial_reviewer.md   ← Challenge your conclusions (7 attack vectors)
+│   ├── synthesis_prompt.md       ← Synthesize only from evidence matrix
+│   └── claim_checker.md          ← Validate a claim before it enters draft
+│
+├── scripts/                      ← Automation
+│   ├── validate_citations.py     ← Check all citekeys exist in references.bib
+│   ├── validate_evidence_matrix.py ← Validate CSV schema + draft alignment
+│   ├── check_claims_without_sources.py ← Scan for unsupported claim phrases
+│   ├── build_evidence_matrix.py  ← Aggregate claims from paper notes → CSV
+│   └── import_zotero_bib.py     ← Merge Zotero export into references.bib
+│
+├── .github/workflows/
+│   └── validate.yml              ← CI: structure + citations + evidence + claims
+│
+├── .claude/                      ← AI/ML Experiment OS (Mode B)
+│   ├── research-os/              ← 34 workflow protocol files
+│   └── skills/                   ← 25 invocable Claude Code commands
+│
+├── templates/                    ← Reusable templates for Mode B
+├── examples/                     ← Sample filled-in artifacts
+└── docs/                         ← Extended documentation
+    └── huong-dan-tieng-viet.md   ← Full guide in Vietnamese
 ```
 
 ---
 
-## Docs
+## CI/CD — What GitHub Actions Validates
 
-- [Quickstart Guide](docs/quickstart.md)
-- [Installation Guide](docs/installation.md)
-- [Anti-Hallucination Rules](.claude/research-os/13_ANTI_HALLUCINATION_RULES.md)
-- [26-Stage Workflow](.claude/research-os/02_RESEARCH_WORKFLOW.md)
-- [Command Reference](.claude/research-os/11_COMMANDS.md)
-- [Changelog](CHANGELOG.md)
+Every push and PR runs 5 checks:
+
+| Check | What it validates | Failure means |
+|---|---|---|
+| `check-structure` | Required files and dirs exist | Missing scaffold files |
+| `validate-citations` | All `@citekey` in notes exist in `.bib` | Orphan citation — paper not registered |
+| `validate-evidence` | CSV schema, controlled vocab, no duplicates | Matrix has invalid or missing data |
+| `check-hallucination` | No "studies show" etc. without claim IDs | Unsupported claim in draft |
+| `build-evidence-matrix` | Matrix passes schema validation | CSV corrupted or malformed |
+
+Run locally before pushing:
+
+```bash
+python scripts/validate_citations.py
+python scripts/validate_evidence_matrix.py
+python scripts/check_claims_without_sources.py
+python scripts/build_evidence_matrix.py --check
+```
 
 ---
 
+## Claude Code Commands (Mode B — AI/ML Experiment)
+
+| Command | What it does | When to use |
+|---|---|---|
+| `/research-start` | Initialize project, register hypothesis | New project |
+| `/gap-scout` | Find research gaps from literature | No idea yet |
+| `/validate-hypothesis` | Dialectical validation (pros/cons) | Before any experiment |
+| `/proxy-run` | Run 25% experiment to test viability | Before full GPU budget |
+| `/hypothesis-tournament` | Compare N hypotheses via Successive Halving | Multiple candidates |
+| `/experiment-loop` | Full experiment run with logging | After proxy passes |
+| `/result-adequacy` | Check results are sufficient to claim | Before writing paper |
+| `/paper-draft` | Write paper from evidence | After result-adequacy passes |
+| `/research-status` | Show current stage and next action | Every session start |
+
+---
+
+## Key Principles
+
+1. **Evidence-first:** Every claim in the draft has a row in `evidence_matrix.csv`
+2. **Traceable:** claim → paper → section/page → confidence level
+3. **Reproducible:** all searches logged, all screening decisions logged, all decisions auditable
+4. **Anti-hallucination:** CI blocks "studies show" and similar phrases without citations
+5. **Honest uncertainty:** confidence levels (high/medium/low) required on all claims
+
+---
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## License
 
-MIT — see [LICENSE](LICENSE)
+MIT — see [LICENSE](LICENSE).
+
+## Documentation
+
+- [Vietnamese guide](docs/huong-dan-tieng-viet.md) — complete workflow in Vietnamese
+- [Quickstart](docs/quickstart.md)
+- [Stage gates](docs/stage-gates.md)
+- [Anti-hallucination rules](docs/anti-hallucination.md)

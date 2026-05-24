@@ -1,0 +1,257 @@
+name: Validate Research OS
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+# Cancel in-progress runs for the same branch on new push
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # -------------------------------------------------------------------------
+  # Job 1: Validate citation consistency
+  # -------------------------------------------------------------------------
+  validate-citations:
+    name: Validate Citations
+    runs-on: ubuntu-latest
+    continue-on-error: false
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Verify script exists
+        run: |
+          if [ ! -f scripts/validate_citations.py ]; then
+            echo "ERROR: scripts/validate_citations.py not found"
+            exit 1
+          fi
+
+      - name: Run citation validator
+        run: |
+          python scripts/validate_citations.py --root .
+        # Exits with code 1 if any orphan citations are found.
+        # Script handles missing files gracefully with warnings.
+
+  # -------------------------------------------------------------------------
+  # Job 2: Validate evidence matrix integrity
+  # -------------------------------------------------------------------------
+  validate-evidence:
+    name: Validate Evidence Matrix
+    runs-on: ubuntu-latest
+    continue-on-error: false
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Verify script exists
+        run: |
+          if [ ! -f scripts/validate_evidence_matrix.py ]; then
+            echo "ERROR: scripts/validate_evidence_matrix.py not found"
+            exit 1
+          fi
+
+      - name: Run evidence matrix validator
+        run: |
+          python scripts/validate_evidence_matrix.py --root .
+        # Exits with code 1 if any check fails (missing columns, invalid values,
+        # duplicate claim IDs, claim IDs not in registry, or unsourced draft sentences).
+
+  # -------------------------------------------------------------------------
+  # Job 3: Check for hallucination-prone phrases
+  # -------------------------------------------------------------------------
+  check-hallucination:
+    name: Check for Unsourced Claims
+    runs-on: ubuntu-latest
+    continue-on-error: false
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Verify script exists
+        run: |
+          if [ ! -f scripts/check_claims_without_sources.py ]; then
+            echo "ERROR: scripts/check_claims_without_sources.py not found"
+            exit 1
+          fi
+
+      - name: Run hallucination phrase checker
+        run: |
+          python scripts/check_claims_without_sources.py \
+            --root . \
+            --dirs outputs synthesis
+        # Exits with code 1 if any HIGH RISK phrases found (phrases like
+        # "studies show", "it is well known", etc. without nearby claim IDs).
+
+      - name: Run hallucination checker in strict mode (advisory)
+        run: |
+          python scripts/check_claims_without_sources.py \
+            --root . \
+            --dirs outputs synthesis \
+            --strict || true
+        # Strict mode also flags medium-risk hedged language without claim IDs.
+        # Advisory only (|| true) — does not fail the job.
+
+  # -------------------------------------------------------------------------
+  # Job 4: Check required directory and file structure
+  # -------------------------------------------------------------------------
+  check-structure:
+    name: Check Repository Structure
+    runs-on: ubuntu-latest
+    continue-on-error: false
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Verify required directories exist
+        run: |
+          echo "=== Checking required directories ==="
+          MISSING_DIRS=0
+
+          for dir in \
+            "research_questions" \
+            "library" \
+            "evidence" \
+            "notes" \
+            "outputs" \
+            "synthesis" \
+            "search" \
+            "screening" \
+            "templates"
+          do
+            if [ -d "$dir" ]; then
+              echo "[OK] Directory exists: $dir"
+            else
+              echo "[FAIL] Directory missing: $dir"
+              MISSING_DIRS=$((MISSING_DIRS + 1))
+            fi
+          done
+
+          if [ "$MISSING_DIRS" -gt 0 ]; then
+            echo ""
+            echo "ERROR: $MISSING_DIRS required directory/directories are missing."
+            echo "Create them with: mkdir -p <dirname>"
+            exit 1
+          fi
+
+          echo ""
+          echo "All required directories are present."
+
+      - name: Verify required files exist
+        run: |
+          echo "=== Checking required files ==="
+          MISSING_FILES=0
+
+          for file in \
+            "research_protocol.md" \
+            "library/references.bib" \
+            "evidence/evidence_matrix.csv" \
+            "search/search_log.csv" \
+            "scripts/validate_citations.py" \
+            "scripts/validate_evidence_matrix.py" \
+            "scripts/check_claims_without_sources.py"
+          do
+            if [ -f "$file" ]; then
+              echo "[OK] File exists: $file"
+            else
+              echo "[FAIL] File missing: $file"
+              MISSING_FILES=$((MISSING_FILES + 1))
+            fi
+          done
+
+          if [ "$MISSING_FILES" -gt 0 ]; then
+            echo ""
+            echo "ERROR: $MISSING_FILES required file(s) are missing."
+            echo "See README.md for setup instructions."
+            exit 1
+          fi
+
+          echo ""
+          echo "All required files are present."
+
+      - name: Verify evidence_matrix.csv has content
+        run: |
+          echo "=== Checking evidence_matrix.csv is non-empty ==="
+          if [ ! -s "evidence/evidence_matrix.csv" ]; then
+            echo "[WARN] evidence/evidence_matrix.csv exists but is empty."
+            echo "       This may be expected for a new project, but is unusual for an active one."
+            # Not a hard failure — new projects start empty
+          else
+            ROWS=$(tail -n +2 evidence/evidence_matrix.csv | grep -c . || true)
+            echo "[OK] evidence_matrix.csv has $ROWS data row(s)."
+          fi
+
+      - name: Verify search_log.csv has header
+        run: |
+          echo "=== Checking search_log.csv structure ==="
+          if [ ! -s "search/search_log.csv" ]; then
+            echo "[WARN] search/search_log.csv is empty — no searches logged yet."
+          else
+            HEADER=$(head -1 search/search_log.csv)
+            echo "[OK] search_log.csv header: $HEADER"
+          fi
+
+      - name: Verify references.bib is non-empty
+        run: |
+          echo "=== Checking references.bib ==="
+          if [ ! -s "library/references.bib" ]; then
+            echo "[WARN] library/references.bib is empty — no references yet."
+          else
+            ENTRIES=$(grep -c "^@" library/references.bib || true)
+            echo "[OK] references.bib contains $ENTRIES BibTeX entry/entries."
+          fi
+
+  # -------------------------------------------------------------------------
+  # Final summary job — runs only if ALL validation jobs pass
+  # -------------------------------------------------------------------------
+  summary:
+    name: All Validations Passed
+    runs-on: ubuntu-latest
+    needs:
+      - validate-citations
+      - validate-evidence
+      - check-hallucination
+      - check-structure
+    # Only run if all required jobs succeeded
+    if: success()
+
+    steps:
+      - name: Print success summary
+        run: |
+          echo "=============================================="
+          echo "  All validations passed."
+          echo "=============================================="
+          echo ""
+          echo "  validate-citations   : PASS"
+          echo "  validate-evidence    : PASS"
+          echo "  check-hallucination  : PASS"
+          echo "  check-structure      : PASS"
+          echo ""
+          echo "Research OS integrity checks complete."
+          echo "The evidence base is consistent and structurally sound."
+          echo ""
+          echo "Commit: ${{ github.sha }}"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Run   : ${{ github.run_number }}"

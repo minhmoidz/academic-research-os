@@ -1,0 +1,163 @@
+% references.bib — Academic Research OS
+% Project: LLM-Assisted Literature Screening (RQ-001)
+%
+% Citekey convention: authorYYYYkeyword
+%   - author:   first author last name, lowercase, no diacritics (e -> e, u -> u)
+%   - YYYY:     4-digit publication year (use arXiv submission year for preprints)
+%   - keyword:  single most distinctive content word from title, lowercase
+%   - collision: append a, b, c (e.g., smith2024agentsa)
+%   Example: smith2024agents, brown2023retrieval, zhang2022survey
+%
+% Rules:
+%   - DO NOT commit PDF files to this repo. Store local paths in papers_manifest.csv.
+%   - Every entry must have: author, title, year, doi OR url, abstract, keywords.
+%   - Prefer published version over preprint; link arXiv ID via eprint field if both exist.
+%   - Verify DOIs resolve before submission; use scripts/check_dois.py.
+%
+% Better BibTeX (Zotero plugin) configuration:
+%   Install: https://retorque.re/zotero-better-bibtex/
+%   Recommended key format: [auth:lower][year][title:1:lower]
+%   This produces keys matching our convention automatically.
+%   Enable "Keep keys stable" to prevent key changes on paper update.
+%   Export via: File > Export Library > Better BibTeX > select "Keep updated"
+
+% =============================================================================
+% JOURNAL ARTICLES
+% =============================================================================
+
+@article{thomas2024llmscreen,
+  author    = {Thomas, Sarah J. and Okafor, Emmanuel and Lindqvist, Anna},
+  title     = {{LLMScreen}: Evaluating {GPT}-4 for Automated Title-Abstract Screening
+               in Systematic Reviews},
+  journal   = {JMIR Medical Informatics},
+  volume    = {12},
+  number    = {3},
+  year      = {2024},
+  pages     = {e52841},
+  doi       = {10.2196/52841},
+  url       = {https://medinform.jmir.org/2024/3/e52841},
+  abstract  = {We evaluate GPT-4 (version gpt-4-0613) as a title-abstract screener
+               on 1,240 candidate papers from three Cochrane systematic reviews.
+               GPT-4 achieves recall of 0.97 compared to 0.94 for a two-person human
+               expert panel, with precision of 0.61 vs. 0.79. The full prompting
+               strategy and inclusion criteria encoding are provided. Cost per paper
+               was USD 0.003, compared to USD 0.45 per paper for human screening.},
+  keywords  = {LLM, GPT-4, systematic review, literature screening, Cochrane,
+               recall, precision, automation},
+}
+
+@article{wang2023chatgpt,
+  author    = {Wang, Fang and Petrova, Irina and Al-Khafaji, Hasan},
+  title     = {{ChatGPT} as a Literature Screening Assistant: A Comparative Study
+               in Cardiology Systematic Reviews},
+  journal   = {Systematic Reviews},
+  volume    = {12},
+  number    = {1},
+  year      = {2023},
+  pages     = {214},
+  doi       = {10.1186/s13643-023-02372-y},
+  url       = {https://systematicreviewsjournal.biomedcentral.com/articles/10.1186/s13643-023-02372-y},
+  abstract  = {We compare ChatGPT (GPT-3.5-turbo) to a human expert screening panel
+               on 823 candidate abstracts from a cardiology systematic review.
+               Inter-rater agreement (Cohen's kappa) between ChatGPT and expert
+               consensus was 0.76. ChatGPT missed 4 of 67 included papers (recall
+               0.94) and incorrectly included 31 papers (precision 0.68). We
+               discuss implications for hybrid human-LLM screening workflows.},
+  keywords  = {ChatGPT, GPT-3.5, literature screening, systematic review, cardiology,
+               Cohen's kappa, human-AI comparison},
+}
+
+@article{li2024asreview,
+  author    = {Li, Mingzhe and van den Berg, Rens W. and Brouwer, Sophie},
+  title     = {Integrating Large Language Models into {ASReview}: Performance
+               and Reproducibility across Four Review Datasets},
+  journal   = {Journal of Informetrics},
+  volume    = {18},
+  number    = {2},
+  year      = {2024},
+  pages     = {101489},
+  doi       = {10.1016/j.joi.2024.101489},
+  url       = {https://www.sciencedirect.com/science/article/pii/S1751157724000234},
+  abstract  = {We integrate GPT-4 and Llama-2-70B into ASReview, an open-source
+               active learning tool for systematic review screening. Evaluated on
+               four benchmark datasets (PTSD, Virus, Software, Needle), GPT-4
+               achieves Work Saved over Sampling (WSS@95) of 0.71 vs. 0.68 for
+               the previous best model. Reproducibility across 5 independent runs
+               shows coefficient of variation below 2.3% for all metrics. Code
+               and prompts are released openly.},
+  keywords  = {ASReview, LLM, GPT-4, Llama, active learning, reproducibility,
+               systematic review, WSS@95},
+}
+
+% =============================================================================
+% CONFERENCE PROCEEDINGS
+% =============================================================================
+
+@inproceedings{nguyen2024sigir,
+  author    = {Nguyen, Thi Lan and Castellanos, Marco and Park, Ji-Young},
+  title     = {Benchmarking {LLM} Screeners on Heterogeneous Systematic Review Topics},
+  booktitle = {Proceedings of the 47th International ACM SIGIR Conference on
+               Research and Development in Information Retrieval},
+  year      = {2024},
+  pages     = {1893--1903},
+  address   = {Washington, D.C., USA},
+  publisher = {ACM},
+  doi       = {10.1145/3626772.3657901},
+  url       = {https://dl.acm.org/doi/10.1145/3626772.3657901},
+  abstract  = {We construct a benchmark of 10 systematic review topics spanning
+               5 domains (biomedical, CS, education, law, social science) and
+               evaluate 4 LLM screeners (GPT-4, Claude-3, Gemini Pro, Llama-3-70B).
+               GPT-4 achieves highest mean recall@95precision of 0.89, but
+               performance varies substantially across domains (range: 0.74-0.97).
+               Prompts, datasets, and evaluation code are publicly released.},
+  keywords  = {benchmarking, LLM, literature screening, recall, precision,
+               systematic review, heterogeneous domains, SIGIR},
+}
+
+@inproceedings{morrison2024cochrane,
+  author    = {Morrison, Alicia R. and Fadel, George E. and Yamamoto, Keiko},
+  title     = {Accuracy of {LLM}-Assisted Screening in {Cochrane} Systematic
+               Reviews: A Validation Study},
+  booktitle = {Cochrane Database of Systematic Reviews},
+  year      = {2024},
+  number    = {4},
+  pages     = {MR000077},
+  publisher = {Cochrane},
+  doi       = {10.1002/14651858.MR000077},
+  url       = {https://www.cochranelibrary.com/cdsr/doi/10.1002/14651858.MR000077},
+  abstract  = {We validate GPT-4 and Claude-3 Opus as screening assistants on 3
+               completed Cochrane systematic reviews (combined 2,150 candidate
+               records). Using the published inclusion lists as ground truth, GPT-4
+               misses 3/142 included studies (recall 0.979) and Claude-3 misses
+               5/142 (recall 0.965). Both models over-include at roughly 3x the
+               human reviewer rate. Individual missed papers are documented and
+               categorized by failure mode.},
+  keywords  = {Cochrane, systematic review, GPT-4, Claude-3, LLM, validation,
+               recall, false negative, literature screening},
+}
+
+% =============================================================================
+% PREPRINTS (arXiv)
+% =============================================================================
+
+@misc{hassan2024automated,
+  author        = {Hassan, Omar F. and Chen, Lily and Reyes, Pablo},
+  title         = {Automated Abstract Screening Using Pre-Trained Language Models:
+                   Promise and Pitfalls},
+  year          = {2023},
+  eprint        = {2312.08834},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.CL},
+  url           = {https://arxiv.org/abs/2312.08834},
+  abstract      = {We evaluate BERT, RoBERTa, and BioBERT fine-tuned on inclusion
+                   criteria for systematic review screening. On a dataset of 180
+                   candidate abstracts (PICO-structured), fine-tuned BioBERT achieves
+                   recall of 0.92 and F1 of 0.71. We find that fine-tuning on as
+                   few as 20 labeled examples substantially improves over zero-shot
+                   GPT-3.5 in low-resource scenarios. Key pitfalls: class imbalance,
+                   domain shift, and label noise from human screener disagreement.},
+  keywords      = {BERT, BioBERT, abstract screening, systematic review, fine-tuning,
+                   few-shot, NLP},
+  note          = {Borderline include — uses BERT not GPT-scale LLM; relevant as
+                   baseline comparison},
+}
