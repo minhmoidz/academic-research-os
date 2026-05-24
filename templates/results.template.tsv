@@ -1,0 +1,5 @@
+exp_id	commit_hash	metric_value	peak_memory_mb	runtime_s	status	description
+BASELINE	0000000000000000000000000000000000000000	0.0000	0.0	0.0	BASELINE	unmodified [baseline-model] with default config
+EXP-1	0000000000000000000000000000000000000001	0.0000	0.0	0.0	PASS	[hypothesis: adding ModuleA improves metric on Dataset-A]
+EXP-2	0000000000000000000000000000000000000002	NaN	NaN	0.0	CRASH	[hypothesis: increasing learning rate — diverged at epoch 3]
+EXP-3	0000000000000000000000000000000000000003	0.0000	0.0	0.0	FAIL	[hypothesis: ModuleB improves metric — no improvement over BASELINE]

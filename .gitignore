@@ -1,0 +1,100 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+venv/
+.venv/
+env/
+.env
+
+# LaTeX compilation artifacts
+*.aux
+*.log
+*.pdf
+*.bbl
+*.blg
+*.synctex.gz
+*.out
+*.toc
+*.fls
+*.fdb_latexmk
+*.nav
+*.snm
+*.vrb
+*.lof
+*.lot
+*.idx
+*.ind
+*.ilg
+*.glo
+*.gls
+*.glg
+*.acn
+*.acr
+*.alg
+_minted*/
+*.pyg
+
+# Data and datasets (do NOT ignore template files)
+data/
+datasets/
+*.csv
+!templates/*.tsv
+!templates/*.csv
+
+# Experiment results and model checkpoints
+results/
+experiments/
+runs/
+checkpoints/
+*.pth
+*.pt
+*.ckpt
+*.pkl
+*.h5
+*.hdf5
+
+# IDE and editor files
+.vscode/
+.idea/
+*.DS_Store
+Thumbs.db
+.swp
+.swo
+*~
+
+# API keys and secrets (NEVER commit these)
+.env
+*.key
+*.pem
+api_keys.txt
+secrets/
+credentials.json
+token.txt
+
+# Claude Code session logs (session-specific, not project artifacts)
+.claude/projects/
+
+# paper-qa index (rebuilt from PDFs, not committed)
+.pqa/
+paper_index/
+literature_index/
+*.pqa
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini
