@@ -219,6 +219,66 @@ jobs:
           fi
 
   # -------------------------------------------------------------------------
+  # Job 5: Validate BibTeX metadata (DOI/URL, required fields, DOI format)
+  # -------------------------------------------------------------------------
+  validate-bib-metadata:
+    name: Validate BibTeX Metadata
+    runs-on: ubuntu-latest
+    continue-on-error: false
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Verify script exists
+        run: |
+          if [ ! -f scripts/validate_bib_metadata.py ]; then
+            echo "ERROR: scripts/validate_bib_metadata.py not found"
+            exit 1
+          fi
+
+      - name: Run BibTeX metadata validator
+        run: |
+          python scripts/validate_bib_metadata.py
+        # Exits 1 if any entry is missing both doi and url.
+        # Prints warnings for missing author/title/year and malformed DOIs (never exits 1).
+
+  # -------------------------------------------------------------------------
+  # Job 6: Validate CSV data rows and manifest-bib alignment
+  # -------------------------------------------------------------------------
+  validate-csv-rows:
+    name: Validate CSV Data Rows
+    runs-on: ubuntu-latest
+    continue-on-error: false
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Verify script exists
+        run: |
+          if [ ! -f scripts/validate_csv_rows.py ]; then
+            echo "ERROR: scripts/validate_csv_rows.py not found"
+            exit 1
+          fi
+
+      - name: Run CSV row validator
+        run: |
+          python scripts/validate_csv_rows.py
+        # Exits 1 if any required CSV is empty or if papers_manifest.csv
+        # contains citekeys not registered in references.bib.
+
+  # -------------------------------------------------------------------------
   # Final summary job — runs only if ALL validation jobs pass
   # -------------------------------------------------------------------------
   summary:
@@ -229,6 +289,8 @@ jobs:
       - validate-evidence
       - check-hallucination
       - check-structure
+      - validate-bib-metadata
+      - validate-csv-rows
     # Only run if all required jobs succeeded
     if: success()
 
@@ -243,6 +305,8 @@ jobs:
           echo "  validate-evidence    : PASS"
           echo "  check-hallucination  : PASS"
           echo "  check-structure      : PASS"
+          echo "  validate-bib-metadata: PASS"
+          echo "  validate-csv-rows    : PASS"
           echo ""
           echo "Research OS integrity checks complete."
           echo "The evidence base is consistent and structurally sound."

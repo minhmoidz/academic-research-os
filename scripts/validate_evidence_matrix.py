@@ -237,6 +237,43 @@ def check_no_duplicate_ids(rows: List[Dict]) -> Tuple[bool, List[str]]:
     return True, [f"No duplicate claim_ids among {len(rows)} rows."]
 
 
+def check_citekey_coverage(
+    rows: List[Dict],
+    bib_path: Path,
+) -> Tuple[bool, List[str]]:
+    """Every paper_citekey in the CSV must exist in references.bib."""
+    if not bib_path.exists():
+        return False, [f"references.bib not found at {bib_path}"]
+
+    try:
+        bib_text = bib_path.read_text(encoding="utf-8", errors="replace")
+    except OSError as exc:
+        return False, [f"Cannot read {bib_path}: {exc}"]
+
+    bib_keys: Set[str] = set(
+        re.findall(r"^@\w+\s*\{\s*([^,\s]+)\s*,", bib_text, re.MULTILINE)
+    )
+
+    matrix_keys = {
+        (row.get("paper_citekey") or "").strip()
+        for row in rows
+        if (row.get("paper_citekey") or "").strip()
+    }
+
+    missing = matrix_keys - bib_keys
+    if missing:
+        msgs = [
+            f"{len(missing)} paper_citekey(s) in CSV not found in references.bib:"
+        ]
+        for key in sorted(missing):
+            msgs.append(f"  {key} — add @article{{...}} or equivalent entry to library/references.bib")
+        return False, msgs
+
+    return True, [
+        f"All {len(matrix_keys)} paper_citekey(s) verified in references.bib."
+    ]
+
+
 def check_registry_coverage(
     rows: List[Dict],
     registry_path: Path,
@@ -319,6 +356,7 @@ def run_all_checks(
     matrix_path: Path,
     registry_path: Path,
     draft_path: Path,
+    bib_path: Path,
 ) -> bool:
     """Run all checks. Return True if all pass (no failures)."""
 
@@ -329,6 +367,7 @@ def run_all_checks(
     print(info_msg(f"Matrix   : {matrix_path}"))
     print(info_msg(f"Registry : {registry_path}"))
     print(info_msg(f"Draft    : {draft_path}"))
+    print(info_msg(f"BibTeX   : {bib_path}"))
 
     fieldnames, rows = read_matrix(matrix_path)
 
@@ -340,15 +379,16 @@ def run_all_checks(
 
     # Define check suite
     checks = [
-        ("Required columns",        lambda: check_required_columns(fieldnames)),
-        ("No empty IDs/text",       lambda: check_no_empty_ids_or_text(rows)),
-        ("evidence_type values",    lambda: check_evidence_type(rows)),
-        ("direction values",        lambda: check_direction(rows)),
-        ("confidence values",       lambda: check_confidence(rows)),
-        ("claim_id format",         lambda: check_claim_id_format(rows)),
-        ("No duplicate claim_ids",  lambda: check_no_duplicate_ids(rows)),
-        ("Registry coverage",       lambda: check_registry_coverage(rows, registry_path)),
-        ("Draft evidence comments", lambda: check_draft_evidence_comments(draft_path)),
+        ("Required columns",            lambda: check_required_columns(fieldnames)),
+        ("No empty IDs/text",           lambda: check_no_empty_ids_or_text(rows)),
+        ("evidence_type values",        lambda: check_evidence_type(rows)),
+        ("direction values",            lambda: check_direction(rows)),
+        ("confidence values",           lambda: check_confidence(rows)),
+        ("claim_id format",             lambda: check_claim_id_format(rows)),
+        ("No duplicate claim_ids",      lambda: check_no_duplicate_ids(rows)),
+        ("paper_citekey in references", lambda: check_citekey_coverage(rows, bib_path)),
+        ("Registry coverage",           lambda: check_registry_coverage(rows, registry_path)),
+        ("Draft evidence comments",     lambda: check_draft_evidence_comments(draft_path)),
     ]
 
     print(header("Check Results"))
@@ -420,6 +460,12 @@ Examples:
         default=None,
         help="Path to draft.md (default: <root>/outputs/draft.md)",
     )
+    parser.add_argument(
+        "--bib",
+        type=str,
+        default=None,
+        help="Path to references.bib (default: <root>/library/references.bib)",
+    )
     return parser.parse_args()
 
 
@@ -439,8 +485,12 @@ def main() -> None:
         Path(args.draft).resolve() if args.draft
         else root / "outputs" / "draft.md"
     )
+    bib_path = (
+        Path(args.bib).resolve() if args.bib
+        else root / "library" / "references.bib"
+    )
 
-    all_passed = run_all_checks(matrix_path, registry_path, draft_path)
+    all_passed = run_all_checks(matrix_path, registry_path, draft_path, bib_path)
     sys.exit(0 if all_passed else 1)
 
 
