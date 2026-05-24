@@ -41,6 +41,64 @@ For full details on each command, see the corresponding SKILL.md file.
 
 ---
 
+### /gap-scout
+
+**Purpose:** Autonomously discover research gaps from literature and propose 3-5 hypothesis candidates when the user has no idea.  
+**Stage:** 0.5 (before Stage 1 — run when user has no idea)  
+**Skill:** `.claude/skills/gap-scout/SKILL.md`  
+**Required inputs:** paper-qa index path, rough area of interest (or "open")  
+**Expected output:** `gap_scout_report.md` with ranked candidates, top 3 presented to user  
+**Forbidden:** Never invent gaps without pqa evidence; never register hypotheses without user confirmation
+
+---
+
+### /validate-hypothesis
+
+**Purpose:** Run dialectical validation on a hypothesis — constructive argument, adversarial critique, adjudication score. Gate before any experiment.  
+**Stage:** 1.5 (after Stage 1 Hypothesis Registration, before Stage 2 Direction Lock)  
+**Skill:** `.claude/skills/validate-hypothesis/SKILL.md`  
+**Required inputs:** HYP-NNN from hypothesis_registry.md, project_profile.md (for paradigm context), paper-qa index  
+**Expected output:** `dialectical_validation.md` with score 0-10 and decision APPROVED/REJECTED/REVISE  
+**Forbidden:** Never approve hypothesis with fatal_flaw = YES; never skip adversarial phase; never run constructive and adversarial in same subagent call
+
+---
+
+### /proxy-run
+
+**Purpose:** Run a cheap proxy experiment (proxy_fraction × full run) before committing full compute budget.  
+**Stage:** 11.5 (before Stage 12 Exploratory Experiments)  
+**Skill:** `.claude/skills/proxy-run/SKILL.md`  
+**Required inputs:** HYP-NNN (validation_status = APPROVED), project_profile.md, config file path, git clean  
+**Expected output:** results.tsv row (PROXY_PASS / PROXY_KILL / PROXY_NAN / PROXY_FAIL) + recommendation  
+**Forbidden:** Never skip proxy and go straight to full run; never modify protected files; never retry PROXY_KILL with same config
+
+---
+
+### /hypothesis-tournament
+
+**Purpose:** Compare multiple APPROVED hypothesis candidates via Successive Halving: proxy → 1-fold → 3-fold → full K-fold. Eliminates weak candidates cheaply.  
+**Stage:** 11.5 (when ≥ 3 APPROVED candidates exist)  
+**Skill:** `.claude/skills/hypothesis-tournament/SKILL.md`  
+**Required inputs:** List of HYP-NNN IDs (all APPROVED), project_profile.md, git clean  
+**Expected output:** Tournament results (all rounds logged to results.tsv), winner declared, confirmatory run scheduled  
+**Forbidden:** Change config between rounds; different folds for different candidates in same round; skip Human Checkpoint before starting
+
+---
+
+### /auto-research
+
+**Purpose:** Run the full semi-autonomous research pipeline: gap-scout → validate → proxy-tournament → confirmatory → evidence → draft.  
+**Stage:** 0 → 19 (full pipeline, 3 human checkpoints)  
+**Required inputs:** project_profile.md (filled), paper-qa index, compute budget confirmation  
+**Expected output:** Complete research artifacts from gap_scout_report.md through paper draft  
+**Human Checkpoints:**  
+  1. After /gap-scout: user selects direction  
+  2. After proxy tournament: user reviews results, approves confirmatory  
+  3. After Result Adequacy Gate: user approves paper writing  
+**Forbidden:** Skip any human checkpoint; write paper prose before Evidence Freeze; run confirmatory without PROXY_PASS
+
+---
+
 ### /resume-research-session
 
 **Purpose:** Resume a research session by restoring full project context.  
@@ -320,15 +378,18 @@ Mark any missing evidence as TODO_*.
 ## Command Flow Summary
 
 ```
-Session start:        /research-status → /tool-healthcheck (if first session)
-New project:          /research-start
-Venue selection:      /venue-target
-Literature:           /literature-review → /prior-art-check → /sota-check
-Planning:             /build-contribution-map → /target-result-contract → /plan-experiments
-Experiments:          /experiment-loop → /experiment-status
-Evaluation:           /result-adequacy → (if fail) /pivot-decision
-Evidence:             /result-backfill
-Writing:              /create-paper-outline → /draft-section [each section] → /design-figure → /format-paper
-Review:               /review-paper → /apply-revision-plan
-Submission:           /submission-check → /archive-paper
+System check:    /research-status → /tool-healthcheck → /verify-research-os
+New project:     /research-start (or /gap-scout nếu chưa có idea)
+Validation:      /validate-hypothesis (BẮT BUỘC trước mọi experiment)
+Venue:           /venue-target
+Literature:      /literature-review → /prior-art-check → /sota-check
+Planning:        /build-contribution-map → /target-result-contract → /plan-experiments
+Experiments:     /proxy-run (single) hoặc /hypothesis-tournament (multiple) → /experiment-loop
+Evaluation:      /result-adequacy → (if fail) /pivot-decision
+Evidence:        /result-backfill
+Writing:         /create-paper-outline → /draft-section [each] → /design-figure → /format-paper
+Review:          /review-paper → /apply-revision-plan
+Submission:      /submission-check → /archive-paper
+
+Full autonomous: /auto-research (covers gap-scout through draft, 3 human checkpoints)
 ```

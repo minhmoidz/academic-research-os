@@ -24,6 +24,13 @@ echo "✓ Created directory: $TARGET"
 # Install Research OS
 bash "$SCRIPT_DIR/install.sh" "$TARGET"
 
+# Create project_profile.md from template
+if [ ! -f "$TARGET/project_profile.md" ]; then
+  cp "$REPO_DIR/templates/project_profile.template.md" "$TARGET/project_profile.md"
+  echo "✓ Created project_profile.md from template"
+  echo "  ⚠ IMPORTANT: Fill project_profile.md before running any experiment!"
+fi
+
 # Create paper_brief.md from template
 if [ ! -f "$TARGET/paper_brief.md" ]; then
   cp "$REPO_DIR/templates/paper_brief.template.md" "$TARGET/paper_brief.md"
@@ -72,6 +79,7 @@ echo "Files created:"
 echo "  $TARGET/.claude/        (Research OS workflow + skills)"
 echo "  $TARGET/CLAUDE.md       (Claude Code project instructions)"
 echo "  $TARGET/project_state.md"
+echo "  $TARGET/project_profile.md  ← FILL THIS before running experiments"
 echo "  $TARGET/paper_brief.md"
 echo "  $TARGET/hypothesis_registry.md"
 echo "  $TARGET/decision_log.md"

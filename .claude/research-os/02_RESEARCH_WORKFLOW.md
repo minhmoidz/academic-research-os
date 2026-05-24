@@ -18,6 +18,8 @@ These rules apply regardless of stage:
 | Claim performance ("outperforms") | Stage 16 (Result Adequacy Gate) passes |
 | Target a high-rank venue | Stage 9 (Target Result Contract) defined |
 | Proceed to next stage | All required artifacts for current stage exist |
+| No experiment (proxy or full) without APPROVED hypothesis | Stage 1.5 (Dialectical Validation) passes |
+| No full run without proxy | Stage 11.5 (Proxy Protocol) PROXY_PASS status |
 
 **Before Stage 17, Claude MAY write** (these are not "final paper prose"):
 - Research notes, hypothesis notes, literature notes
@@ -56,7 +58,7 @@ The prohibition is on **final prose** (complete sentences written as if for a su
 
 **Pass criteria:**
 - pqa available or marked as optional for this project
-- LaTeX compiler confirmed (tectonic at `tectonic`)
+- LaTeX compiler confirmed (tectonic at `/opt/anaconda3/bin/tectonic`)
 - academic-writing-agents plugin confirmed
 - `project_state.md` exists or is created fresh
 
@@ -70,6 +72,43 @@ The prohibition is on **final prose** (complete sentences written as if for a su
 - Starting to write prose during readiness check
 
 **Next allowed stage:** Stage 1 (if new project) or resume from `project_state.md` current stage
+
+---
+
+## Stage 0.5 — Gap Scout *(Optional — skip if user has a clear idea)*
+
+**Goal:** Autonomously discover research gaps from literature and propose hypothesis candidates when the user has no direction.
+
+**When to use:** User has domain knowledge and access to PDFs but no specific idea. Or user wants Claude to find novel directions from the existing literature corpus.
+
+**Required inputs:** paper-qa index on domain literature
+
+**Required outputs:**
+- `gap_scout_report.md` with ≥ 3 ranked candidates
+- Top 3 candidates presented to user
+- User selection logged (Human Checkpoint 1)
+- Selected hypothesis registered as HYP-001 in `hypothesis_registry.md`
+
+**Skills/tools:**
+- `/gap-scout` skill → `29_GAP_SCOUT_PROTOCOL.md`
+- paper-qa (pqa) for literature queries
+
+**Pass criteria:**
+- ≥ 3 gaps identified with pqa evidence
+- All candidates have priority_score computed
+- User has selected a direction
+- Selected hypothesis registered in hypothesis_registry.md
+
+**Fail conditions:**
+- pqa index empty or unavailable → add PDFs first
+- All identified gaps have high prior-art threat → run `/prior-art-check` before proceeding
+
+**Forbidden:**
+- Proposing gaps without pqa evidence
+- Registering hypotheses without user confirmation
+- Proceeding past this stage without user selection
+
+**Next allowed stage:** Stage 1 (Idea Intake, with the selected direction as input)
 
 ---
 
@@ -111,6 +150,45 @@ The prohibition is on **final prose** (complete sentences written as if for a su
 - Creating LaTeX files
 
 **Next allowed stage:** Stage 2
+
+---
+
+## Stage 1.5 — Dialectical Validation *(Required before any experiment)*
+
+**Goal:** Validate every hypothesis with a constructive argument + independent adversarial critique before committing compute.
+
+**Hard rule:** No experiment (proxy or full) may run until the hypothesis has validation_status = APPROVED.
+
+**Required inputs:**
+- HYP-NNN entry in hypothesis_registry.md (status = pending)
+- project_profile.md (for paradigm context)
+- paper-qa index (for literature evidence)
+
+**Required outputs:**
+- `dialectical_validation.md` with full 3-step record
+- hypothesis_registry.md updated: `dialectical_score`, `validation_status`
+
+**Skills/tools:**
+- `/validate-hypothesis` skill → `30_DIALECTICAL_VALIDATION.md`
+- `academic-writing-agents:brainstormer` (constructive phase)
+- `academic-writing-agents:research-analyst` (adversarial phase — run independently)
+
+**Pass criteria:**
+- aggregate_score ≥ 6/10
+- fatal_flaw = NO
+- validation_status = APPROVED in hypothesis_registry.md
+
+**Fail conditions:**
+- score < 6 → validation_status = REJECTED or REVISE
+- fatal_flaw detected → must resolve before any experiment
+
+**Forbidden:**
+- Running constructive and adversarial in same subagent call
+- Skipping literature search in constructive phase
+- Approving hypothesis with fatal_flaw = YES
+- Running experiments before this stage passes
+
+**Next allowed stage:** Stage 2 (Research Direction Lock, if APPROVED) or hypothesis revision
 
 ---
 
@@ -464,6 +542,50 @@ or `/pivot-decision` (if threat = Critical and no differentiation)
 
 ---
 
+## Stage 11.5 — Proxy Experiment Protocol *(Required before full experiments)*
+
+**Goal:** Run cheap proxy experiments to eliminate weak hypotheses before committing full compute budget.
+
+**Hard rule:** No full experiment may run without PROXY_PASS status in results.tsv.
+
+**Required inputs:**
+- All hypotheses: validation_status = APPROVED
+- project_profile.md with all fields filled (including baseline_metric)
+- Git clean (working tree committed)
+- Baseline run completed
+
+**Required outputs:**
+- results.tsv rows for all candidates (PROXY_PASS / PROXY_KILL / PROXY_NAN)
+- hypothesis_registry.md updated: `proxy_status`, `proxy_metric`
+- Tournament winner if multiple candidates (see Stage 11.5b)
+
+**Sub-stage 11.5a — Single hypothesis:**
+Use `/proxy-run` for single hypothesis testing.
+
+**Sub-stage 11.5b — Multiple hypotheses (≥ 3):**
+Use `/hypothesis-tournament` for Successive Halving.
+
+**Skills/tools:**
+- `/proxy-run` skill → `31_PROXY_EXPERIMENT_PROTOCOL.md`
+- `/hypothesis-tournament` skill → `32_HYPOTHESIS_TOURNAMENT.md`
+
+**Pass criteria:**
+- ≥ 1 hypothesis with PROXY_PASS status
+- All proxy results logged to results.tsv with commit hash
+
+**Fail conditions:**
+- All candidates PROXY_KILL or PROXY_NAN → run `/pivot-decision`
+- project_profile.metric_extract returns non-float → fix parsing script
+
+**Forbidden:**
+- Running full experiment without PROXY_PASS
+- Extending proxy duration after PROXY_KILL ("needs more epochs")
+- Changing config after proxy to retry PROXY_KILL
+
+**Next allowed stage:** Stage 12 (Exploratory Experiments) for PROXY_PASS candidates
+
+---
+
 ## Stage 12 — Exploratory Experiment Loop
 
 **Goal:** Run exploratory experiments to discover what is true. Results may contradict the initial hypothesis — that is acceptable and expected.
@@ -750,7 +872,7 @@ or `/pivot-decision` (if threat = Critical and no differentiation)
 
 **Skills/tools:**
 - `/format-paper` skill
-- `tectonic` at `tectonic`
+- `tectonic` at `/opt/anaconda3/bin/tectonic`
 - `07_FIGURE_AND_FORMAT_PLAYBOOK.md`
 
 **Forbidden:**

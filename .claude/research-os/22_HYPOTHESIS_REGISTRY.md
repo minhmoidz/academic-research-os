@@ -118,6 +118,32 @@ Inconclusive: [N] | Pending: [N] | Testing: [N] | Abandoned: [N]
 - **evidence:** none yet
 - **decision:** none yet
 - **next_action:** Run EXP-001; do not update status until experiment log entry exists.
+- **dialectical_score:** [0-10 | null]
+  # Aggregate score từ /validate-hypothesis. null = chưa validate.
+  # Chỉ hypotheses với score ≥ 6 được chạy experiment.
+- **validation_status:** [PENDING | APPROVED | REJECTED | REVISE]
+  # PENDING = chưa validate
+  # APPROVED = dialectical_score ≥ 6 AND no fatal_flaw → có thể chạy proxy
+  # REJECTED = score < 6 OR fatal_flaw detected → không chạy experiment
+  # REVISE = cần viết lại argument trước khi validate lại
+- **proxy_status:** [NOT_RUN | PROXY_PASS | PROXY_KILL | PROXY_NAN | PROXY_FAIL]
+  # NOT_RUN = proxy chưa chạy
+  # PROXY_PASS = passed kill_if check → proceed to full run
+  # PROXY_KILL = failed kill_if → abandoned
+  # PROXY_NAN = NaN encountered → investigate
+  # PROXY_FAIL = crash/error → fix code
+- **proxy_metric:** [float | null]
+  # Primary metric value sau proxy run. null nếu NOT_RUN.
+- **tournament_round:** [null | 0 | 1 | 2 | WINNER | ELIMINATED]
+  # null = single hypothesis (not in tournament)
+  # 0 = competed in proxy round
+  # 1 = survived to 1-fold round
+  # 2 = survived to 3-fold round
+  # WINNER = tournament winner
+  # ELIMINATED = eliminated in tournament round N
+- **max_gpu_hours:** [float | null]
+  # Hard cap trên compute budget cho hypothesis này (GPU-hours)
+  # Experiment tự động kill nếu vượt quá. null = no cap.
 ```
 
 ---
@@ -133,21 +159,20 @@ Inconclusive: [N] | Pending: [N] | Testing: [N] | Abandoned: [N]
 - **date_registered:** 2025-03-10
 - **stage_registered:** 2
 - **hypothesis_text:** >
-    If an [AttentionModule] is added to [BaselineModel] before patch aggregation, then the
-    5-fold mean AUC on [Dataset-A] will increase by at least 1.5 percentage points compared
-    to the vanilla [BaselineModel] baseline.
+    If a cross-attention gating (CGA) module is added to the GMMamba backbone before patch
+    aggregation, then the 5-fold mean AUC on TCGA-ESCA will increase by at least 1.5 percentage
+    points compared to the vanilla GMMamba baseline.
 - **motivation:** >
-    [BaselineModel] aggregates patch features with equal weighting across the sequence.
-    Pathological or complex features in input data are often spatially heterogeneous, so a
-    gating mechanism should suppress irrelevant patches. Prior work on attention-gating in
-    similar settings shows consistent gains on comparable datasets. We expect the gain to be
-    larger on [Dataset-A] than [Dataset-B] due to higher intra-sample heterogeneity.
+    GMMamba aggregates patch features with equal weighting across the sequence. Pathological
+    features in WSIs are spatially heterogeneous, so a gating mechanism should suppress irrelevant
+    patches. Prior work on attention-gating in MIL (ABMIL, TransMIL) shows consistent gains on
+    TCGA datasets. We expect the gain to be larger on ESCA than Lung due to higher intra-slide
+    heterogeneity in ESCA.
 - **expected_observation:** >
-    val_auc on [Dataset-A] will increase from approximately 0.855 ([BaselineModel] baseline)
-    to at least 0.870 with [AttentionModule] added.
+    val_auc on TCGA-ESCA will increase from ~0.855 (GMMamba baseline) to ≥ 0.870 with CGA added.
 - **experiment_assigned:** EXP-003
 - **metric:** val_auc (5-fold mean ± std)
-- **success_criterion:** val_auc ≥ 0.870 on [Dataset-A]
+- **success_criterion:** val_auc ≥ 0.870 on TCGA-ESCA
 - **failure_criterion:** val_auc < 0.860 or no statistically meaningful gap from baseline
 - **possible_outcomes:**
     - supports: val_auc ≥ 0.870
@@ -155,9 +180,9 @@ Inconclusive: [N] | Pending: [N] | Testing: [N] | Abandoned: [N]
     - contradicts: val_auc < 0.860 or degrades
     - inconclusive: fold variance > 0.030, masking true effect
 - **current_status:** supported
-- **evidence:** EXP-003 → val_auc = 0.8823 ± 0.0091 ([Dataset-A], 5-fold); logged 2025-04-02
+- **evidence:** EXP-003 → val_auc = 0.8823 ± 0.0091 (TCGA-ESCA, 5-fold); logged 2025-04-02
 - **decision:** KEEP — HYP-001 becomes contribution candidate CC-01 in contribution_contract.md
-- **next_action:** Proceed to ablation to confirm [AttentionModule] contributes independently of other modules.
+- **next_action:** Proceed to ablation to confirm CGA contributes independently of other modules.
 ```
 
 ---
@@ -171,19 +196,18 @@ Inconclusive: [N] | Pending: [N] | Testing: [N] | Abandoned: [N]
 - **date_registered:** 2025-03-12
 - **stage_registered:** 2
 - **hypothesis_text:** >
-    If a learnable sequence (LS) positional token is prepended to the input sequence in
-    [BaselineModel], then the 5-fold mean AUC on [Dataset-B] will increase by at least
-    1.0 percentage point over [BaselineModel] without LS.
+    If a learnable sequence (LS) positional token is prepended to the patch sequence in GMMamba,
+    then the 5-fold mean AUC on TCGA-Lung will increase by at least 1.0 percentage point over
+    GMMamba without LS.
 - **motivation:** >
-    [BaselineModel] processes inputs as an unordered set. Ordering along the scan or
-    processing path may contain structural information. Prepending a learnable positional
-    token, similar to the CLS token in ViT, could anchor global context for the sequence model.
+    GMMamba processes patches as an unordered set. WSI patch ordering along the tissue scan path
+    may contain structural information. Prepending a learnable positional token, similar to the
+    CLS token in ViT, could anchor global context for the Mamba sequence model.
 - **expected_observation:** >
-    val_auc on [Dataset-B] will increase from approximately 0.948 ([BaselineModel]) to
-    at least 0.958 with LS token.
+    val_auc on TCGA-Lung will increase from ~0.948 (GMMamba) to ≥ 0.958 with LS token.
 - **experiment_assigned:** EXP-005
 - **metric:** val_auc (5-fold mean)
-- **success_criterion:** val_auc ≥ 0.958 on [Dataset-B]
+- **success_criterion:** val_auc ≥ 0.958 on TCGA-Lung
 - **failure_criterion:** val_auc < 0.948 (degradation) or no meaningful change
 - **possible_outcomes:**
     - supports: val_auc ≥ 0.958
@@ -191,9 +215,9 @@ Inconclusive: [N] | Pending: [N] | Testing: [N] | Abandoned: [N]
     - contradicts: val_auc < 0.948
     - inconclusive: high fold variance
 - **current_status:** contradicted
-- **evidence:** EXP-005 → val_auc = 0.9421 ± 0.0114 ([Dataset-B], 5-fold); degraded from
+- **evidence:** EXP-005 → val_auc = 0.9421 ± 0.0114 (TCGA-Lung, 5-fold); degraded from
     baseline 0.948; logged 2025-04-08
-- **decision:** DIAGNOSE — investigate whether LS token disrupts sequence length assumptions.
+- **decision:** DIAGNOSE — investigate whether LS token disrupts Mamba sequence length assumptions.
 - **next_action:** Run EXP-006 (LS with position normalization); if still degrading, ABANDON LS
     as standalone module. Do NOT claim LS as a positive contribution. Log DEC-003 in decision_log.md.
     See 23_RESEARCH_DIRECTION_UPDATE.md for direction update protocol.
@@ -210,20 +234,18 @@ Inconclusive: [N] | Pending: [N] | Testing: [N] | Abandoned: [N]
 - **date_registered:** 2025-03-15
 - **stage_registered:** 4
 - **hypothesis_text:** >
-    If the [ProposedModule] is appended after the [BaselineModel] encoder, then the 5-fold
-    macro-F1 on [Dataset-A] will increase by at least 2 percentage points compared to
-    [BaselineModel] without [ProposedModule].
+    If the AHGR (Adaptive Hierarchical Graph Reasoning) module is appended after the GMMamba
+    encoder, then the 5-fold macro-F1 on TCGA-ESCA will increase by at least 2 percentage points
+    compared to GMMamba without AHGR.
 - **motivation:** >
-    Input instances often share regional or structural context. Graph-based or hierarchical
-    reasoning over instance neighborhoods has been shown to capture structure missed by
-    linear sequence models. [ProposedModule] adds local-global reasoning at adaptive scales,
-    potentially capturing context missed by the base encoder.
+    WSI patches share regional morphological context. Graph-based reasoning over patch neighborhoods
+    has been shown to capture tissue architecture. AHGR adds local-global graph reasoning at
+    adaptive scales, potentially capturing context missed by the linear Mamba scan.
 - **expected_observation:** >
-    macro_f1 on [Dataset-A] will increase from approximately 0.79 ([BaselineModel]) to
-    at least 0.81 with [ProposedModule].
+    macro_f1 on TCGA-ESCA will increase from ~0.79 (GMMamba) to ≥ 0.81 with AHGR.
 - **experiment_assigned:** EXP-007
 - **metric:** macro_f1 (5-fold mean)
-- **success_criterion:** macro_f1 ≥ 0.81 on [Dataset-A]
+- **success_criterion:** macro_f1 ≥ 0.81 on TCGA-ESCA
 - **failure_criterion:** macro_f1 < 0.79 or fold std > 0.040
 - **possible_outcomes:**
     - supports: macro_f1 ≥ 0.81
@@ -231,12 +253,12 @@ Inconclusive: [N] | Pending: [N] | Testing: [N] | Abandoned: [N]
     - contradicts: macro_f1 < 0.79
     - inconclusive: fold std > 0.040 masking effect
 - **current_status:** inconclusive
-- **evidence:** EXP-007 → macro_f1 = 0.8071 ± 0.0431 ([Dataset-A], 5-fold); std too high to
+- **evidence:** EXP-007 → macro_f1 = 0.8071 ± 0.0431 (TCGA-ESCA, 5-fold); std too high to
     conclude; logged 2025-04-15
 - **decision:** REFINE — insufficient evidence. Increase seed count from 5 to 10; check for
     data imbalance in fold splits.
-- **next_action:** Register HYP-008 with larger evaluation budget. Do not claim [ProposedModule]
-    as a confirmed contribution until HYP-008 resolves.
+- **next_action:** Register HYP-008 with larger evaluation budget. Do not claim AHGR as a
+    confirmed contribution until HYP-008 resolves.
 ```
 
 ---
@@ -271,3 +293,29 @@ Inconclusive: [N] | Pending: [N] | Testing: [N] | Abandoned: [N]
 If a hypothesis is `contradicted` or `inconclusive`, refer to
 **`23_RESEARCH_DIRECTION_UPDATE.md`** for the protocol on how this affects the research direction,
 contribution contract, and venue targeting.
+
+---
+
+## Field Quick Reference
+
+| Field | Required | Set by | Used by |
+|-------|----------|--------|---------|
+| id | Yes | User/Claude | All protocols |
+| registered | Yes | /research-start or /gap-scout | Decision log |
+| status | Yes | Updated throughout | hypothesis_registry |
+| type | Yes | User | Contribution map |
+| claim | Yes | User | TRC, paper |
+| hypothesis | Yes | User | Dialectical validation |
+| rationale | Yes | User | Dialectical validation |
+| prediction | Yes | User | Proxy kill check |
+| success_criterion | Yes | User | Result Adequacy Gate |
+| experiment | Yes | experiment-loop | results.tsv |
+| evidence | Yes (after exp) | result-backfill | claim-evidence-table |
+| conclusion | Yes (after exp) | User/Claude | paper |
+| next_action | Optional | Claude | Session planning |
+| **dialectical_score** | Yes (before exp) | /validate-hypothesis | Proxy gate |
+| **validation_status** | Yes (before exp) | /validate-hypothesis | experiment-loop |
+| **proxy_status** | Yes (after proxy) | /proxy-run | Full run decision |
+| **proxy_metric** | Yes (after proxy) | /proxy-run | Tournament ranking |
+| **tournament_round** | If tournament | /hypothesis-tournament | Tournament tracking |
+| **max_gpu_hours** | Optional | User | Hard budget cap |
