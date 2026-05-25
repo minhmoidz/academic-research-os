@@ -12,7 +12,7 @@ Every item maps to a specific failure mode — work through them in order.
 | 1.1 | Every BibTeX entry has a `doi` or `url` field | `python scripts/validate_bib_metadata.py` | ☐ |
 | 1.2 | Every entry has `author`, `title`, and `year` | `python scripts/validate_bib_metadata.py` (soft warning) | ☐ |
 | 1.3 | All DOIs match the canonical `10.NNNN/...` format | `python scripts/validate_bib_metadata.py` (soft warning) | ☐ |
-| 1.4 | All DOIs resolve (click-test or `scripts/check_dois.py`) | Manual or automated | ☐ |
+| 1.4 | All DOIs resolve — open each DOI URL in a browser and confirm the page loads | Manual: click each `doi` field value in `references.bib` | ☐ |
 | 1.5 | No duplicate citekeys in `references.bib` | `grep -n "^@" library/references.bib \| sort` | ☐ |
 | 1.6 | Citekey convention followed (`authorYYYYkeyword`) | Visual check of references.bib | ☐ |
 

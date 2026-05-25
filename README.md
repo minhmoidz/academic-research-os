@@ -133,15 +133,16 @@ academic-research-os/
 
 ## CI/CD — What GitHub Actions Validates
 
-Every push and PR runs 5 checks:
+Every push and PR runs 6 checks:
 
 | Check | What it validates | Failure means |
 |---|---|---|
 | `check-structure` | Required files and dirs exist | Missing scaffold files |
 | `validate-citations` | All `@citekey` in notes exist in `.bib` | Orphan citation — paper not registered |
-| `validate-evidence` | CSV schema, controlled vocab, no duplicates | Matrix has invalid or missing data |
+| `validate-evidence` | CSV schema, controlled vocab, duplicate IDs, citekeys vs `.bib`, draft Evidence comments | Matrix invalid or out of sync |
 | `check-hallucination` | No "studies show" etc. without claim IDs | Unsupported claim in draft |
-| `build-evidence-matrix` | Matrix passes schema validation | CSV corrupted or malformed |
+| `validate-bib-metadata` | Every BibTeX entry has DOI or URL; warns on missing author/title/year and malformed DOIs | Entry missing both doi and url |
+| `validate-csv-rows` | Required CSVs have ≥1 data row; `papers_manifest.csv` citekeys exist in `.bib` | Empty CSV or manifest/bib drift |
 
 Run locally before pushing:
 
@@ -149,7 +150,8 @@ Run locally before pushing:
 python scripts/validate_citations.py
 python scripts/validate_evidence_matrix.py
 python scripts/check_claims_without_sources.py
-python scripts/build_evidence_matrix.py --check
+python scripts/validate_bib_metadata.py
+python scripts/validate_csv_rows.py
 ```
 
 ---

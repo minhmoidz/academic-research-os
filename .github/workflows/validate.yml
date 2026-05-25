@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: ["**"]
 
+# Opt into Node.js 24 for JavaScript actions when GitHub supports it,
+# suppressing Node.js 20 deprecation warnings on runners that have upgraded.
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 # Cancel in-progress runs for the same branch on new push
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
