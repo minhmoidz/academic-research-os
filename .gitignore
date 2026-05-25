@@ -8,6 +8,10 @@ __pycache__/
 dist/
 build/
 venv/
+
+# Generated reports (produced by `python -m research_os report`)
+# Commit them deliberately if you want a snapshot; ignore by default.
+reports/*.md
 .venv/
 env/
 .env

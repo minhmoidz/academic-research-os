@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "research-os"
+version = "0.1.0"
+description = "Academic Research OS — evidence-first literature review toolkit"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.11"
+# Zero runtime dependencies — stdlib only (tomllib, csv, re, subprocess, argparse)
+
+[project.scripts]
+research-os = "research_os.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["research_os*"]

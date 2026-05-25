@@ -284,6 +284,31 @@ jobs:
         # contains citekeys not registered in references.bib.
 
   # -------------------------------------------------------------------------
+  # Job 7: CLI integration test — validates via python -m research_os validate
+  # -------------------------------------------------------------------------
+  cli-validate:
+    name: CLI Integration (python -m research_os validate)
+    runs-on: ubuntu-latest
+    continue-on-error: false
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install research-os package
+        run: pip install -e .
+
+      - name: Run CLI validate
+        run: python -m research_os validate
+        # Runs all 5 validators via the CLI wrapper.
+        # Exits 1 if any validator fails. Proves the package installs and works end-to-end.
+
+  # -------------------------------------------------------------------------
   # Final summary job — runs only if ALL validation jobs pass
   # -------------------------------------------------------------------------
   summary:
@@ -296,6 +321,7 @@ jobs:
       - check-structure
       - validate-bib-metadata
       - validate-csv-rows
+      - cli-validate
     # Only run if all required jobs succeeded
     if: success()
 
@@ -312,6 +338,7 @@ jobs:
           echo "  check-structure      : PASS"
           echo "  validate-bib-metadata: PASS"
           echo "  validate-csv-rows    : PASS"
+          echo "  cli-validate         : PASS"
           echo ""
           echo "Research OS integrity checks complete."
           echo "The evidence base is consistent and structurally sound."

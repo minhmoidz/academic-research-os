@@ -1,0 +1,21 @@
+# research.toml — Academic Research OS project configuration
+#
+# Override any path here if your project uses a non-standard layout.
+# All paths are relative to the project root (directory containing this file).
+# The CLI reads this file automatically when you run `python -m research_os`.
+
+[paths]
+references      = "library/references.bib"
+evidence_matrix = "evidence/evidence_matrix.csv"
+search_log      = "search/search_log.csv"
+screening_table = "screening/screening_table.csv"
+papers_manifest = "library/papers_manifest.csv"
+draft           = "outputs/draft.md"
+reports_dir     = "reports"
+
+[scripts]
+validate_citations    = "scripts/validate_citations.py"
+validate_evidence     = "scripts/validate_evidence_matrix.py"
+check_hallucination   = "scripts/check_claims_without_sources.py"
+validate_bib_metadata = "scripts/validate_bib_metadata.py"
+validate_csv_rows     = "scripts/validate_csv_rows.py"

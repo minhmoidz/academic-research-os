@@ -131,9 +131,35 @@ academic-research-os/
 
 ---
 
+## CLI Usage
+
+After installing the package, the `research-os` command and `python -m research_os` are both available:
+
+```bash
+# Install (editable — changes to scripts take effect immediately)
+pip install -e .
+
+# Run all validators at once
+python -m research_os validate
+
+# Print project statistics (claims, papers, confidence breakdown)
+python -m research_os status
+
+# Write reports/research_status.md
+python -m research_os report
+
+# Override paths via research.toml (edit the file in your project root)
+# or pass --root to point at a different project:
+python -m research_os status --root /path/to/other-project
+```
+
+Configure paths in `research.toml` at the project root — all values default to the standard layout so no editing is required for new projects.
+
+---
+
 ## CI/CD — What GitHub Actions Validates
 
-Every push and PR runs 6 checks:
+Every push and PR runs 7 checks:
 
 | Check | What it validates | Failure means |
 |---|---|---|
@@ -143,15 +169,20 @@ Every push and PR runs 6 checks:
 | `check-hallucination` | No "studies show" etc. without claim IDs | Unsupported claim in draft |
 | `validate-bib-metadata` | Every BibTeX entry has DOI or URL; warns on missing author/title/year and malformed DOIs | Entry missing both doi and url |
 | `validate-csv-rows` | Required CSVs have ≥1 data row; `papers_manifest.csv` citekeys exist in `.bib` | Empty CSV or manifest/bib drift |
+| `cli-validate` | `pip install -e .` then `python -m research_os validate` end-to-end | Package or CLI broken |
 
 Run locally before pushing:
 
 ```bash
+# Individual scripts (granular output)
 python scripts/validate_citations.py
 python scripts/validate_evidence_matrix.py
 python scripts/check_claims_without_sources.py
 python scripts/validate_bib_metadata.py
 python scripts/validate_csv_rows.py
+
+# Or all at once via CLI (matches what CI runs)
+python -m research_os validate
 ```
 
 ---
